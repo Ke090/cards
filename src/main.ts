@@ -1,0 +1,161 @@
+import "./style.css";
+import { items, probability, type Item } from "./catalog";
+import {
+  addItem,
+  drawItem,
+  parseCollection,
+  stats,
+  storageKey,
+  type Collection,
+} from "./game";
+
+const capsuleIcon = '<span class="capsule-icon" aria-hidden="true"></span>';
+const app = document.querySelector<HTMLDivElement>("#app")!;
+app.innerHTML = `
+  <header class="site-header"><a class="brand" href="#" aria-label="POCKET GACHA ホーム">${capsuleIcon}<span>POCKET<span class="brand-light">GACHA</span><small>ちいさな、わくわく。</small></span></a><nav aria-label="メインナビゲーション"><a class="nav-active" href="#gacha">ガチャ</a><a href="#collection">コレクション <span id="nav-count">0</span></a></nav><span class="free-label"><span></span> ずっと無料であそべます</span></header>
+  <main>
+    <section id="gacha" class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy"><div class="eyebrow"><span></span> A LITTLE SURPRISE, JUST FOR YOU</div><h1 id="hero-title">小さな出会いを、<br>ポケットに<span class="heading-dot">。</span></h1><p class="hero-description">まわして、出会って、集めよう。<br>何が出るかは、開けてからのお楽しみ。</p><div class="series-tag"><span>VOL. 01</span> ちいさなともだち <span class="tag-total">全${items.length}種類</span></div><div class="mini-friends" aria-hidden="true"><span>✦</span><p>なんでもない日に、<br><strong>ちょっとした、ときめきを。</strong></p></div></div>
+      <div class="play-area"><div class="stage"><span class="stage-orbit orbit-one"></span><span class="stage-orbit orbit-two"></span><span class="spark spark-one">✧</span><span class="spark spark-two">✦</span><span class="stage-note">なにが出るかな？</span><span class="rare-sticker">きらっと出会える<br><strong>レアなともだちも！</strong><span>✧</span></span>
+        <div class="machine" aria-hidden="true"><div class="machine-cap"><span>POCKET GACHA</span></div><div class="machine-globe"><div class="glass-shine"></div><div class="globe-label">little<br><em>friends.</em><small>COLLECTION 01</small></div>${Array.from({ length: 8 }, (_, i) => `<span class="toy-ball ball-${i}"></span>`).join("")}</div><div class="machine-base"><div class="machine-plaque">TURN FOR A LITTLE HAPPINESS</div><div class="machine-controls"><span class="coin-slot"></span><span class="handle"><i></i></span><span class="turn-arrow">↻</span></div><div class="machine-opening"><span class="dispensed-ball"></span></div><span class="machine-foot left"></span><span class="machine-foot right"></span></div></div><div class="machine-shadow"></div>
+      </div><button id="draw" class="draw-button">${capsuleIcon}<span>ガチャをひく</span><span aria-hidden="true">↗</span></button><p class="draw-caption" id="draw-status" role="status">何回でも無料 <span>•</span> ひとまわし、ひとつの出会い</p></div>
+    </section>
+    <section class="collection-section" id="collection" aria-labelledby="collection-title"><div class="collection-heading"><div><div class="eyebrow">YOUR LITTLE TREASURES</div><h2 id="collection-title">マイコレクション<span id="unique-count">0 / ${items.length}</span></h2></div><div class="collection-actions"><span>まわした回数 <strong id="total-count">0</strong><small> 回</small></span><button id="rates-button" class="text-button">ラインナップ・提供割合 <span aria-hidden="true">↗</span></button></div></div><div class="progress-track" role="progressbar" aria-label="コレクション達成率" aria-valuemin="0" aria-valuemax="${items.length}" aria-valuenow="0"><span id="progress"></span></div><div class="filter-bar"><div role="group" aria-label="コレクションの絞り込み"><button class="filter active" data-filter="all" aria-pressed="true">すべて</button><button class="filter" data-filter="owned" aria-pressed="false">獲得済み</button></div><p id="collection-message">あなたの小さなコレクション、ここから。</p></div><div class="item-grid" id="item-grid"></div><p id="empty-message" class="empty-message" hidden>まだ、ともだちはいないみたい。<br>最初のガチャをひいてみよう！</p><p class="storage-note" id="storage-note" role="status">◈ コレクションは、このブラウザーに自動で保存されます。</p></section>
+  </main><footer><a class="footer-brand" href="#">POCKET GACHA</a><span>ひとつずつ、好きがふえていく。</span><small>JUST PLAY. NO PAY.</small></footer>
+  <dialog id="result-dialog" class="result-dialog" aria-labelledby="result-title"><button class="close-button" aria-label="結果を閉じる">×</button><div id="result-content"></div><button id="again" class="draw-button">もう一度ひく <span aria-hidden="true">↗</span></button><button id="view-collection" class="text-button">コレクションを見る</button></dialog>
+  <dialog id="rates-dialog" aria-labelledby="rates-title"><button class="close-button" aria-label="提供割合を閉じる">×</button><div class="eyebrow">MEET YOUR LITTLE FRIENDS</div><h2 id="rates-title">ラインナップ・提供割合</h2><p class="dialog-description">ちいさなともだち / VOL. 01<br>毎回、同じ確率で抽選します。重複して出ることもあります。</p><div class="rates-list">${items.map((item) => `<div><div class="rate-art">${art(item)}</div><span>${item.name}<small>${item.rarity === "rare" ? "✦ RARE" : "NORMAL"}</small></span><strong>${probability(item)}<small>%</small></strong></div>`).join("")}</div><p class="dialog-description">回数による確率の変化や、レアの確定保証はありません。</p></dialog>`;
+
+function element<T extends HTMLElement>(selector: string): T {
+  return document.querySelector<T>(selector)!;
+}
+
+function art(item: Item): string {
+  return `<div class="item-art" role="img" aria-label="${item.name}" style="--art-image:url('${item.art.url}');--art-position:${item.art.position};--art-size:${item.art.size}"></div>`;
+}
+
+let collection: Collection = {};
+let storageFailed = false;
+try {
+  collection = parseCollection(localStorage.getItem(storageKey));
+} catch {
+  storageFailed = true;
+}
+let filter: "all" | "owned" = "all";
+let drawing = false;
+const resultDialog = element<HTMLDialogElement>("#result-dialog");
+const ratesDialog = element<HTMLDialogElement>("#rates-dialog");
+const drawButton = element<HTMLButtonElement>("#draw");
+
+function renderCollection() {
+  const { total, unique } = stats(collection);
+  element("#total-count").textContent = String(total);
+  element("#unique-count").textContent = `${unique} / ${items.length}`;
+  element("#nav-count").textContent = String(unique);
+  element("#progress").style.width = `${(unique / items.length) * 100}%`;
+  element(".progress-track").setAttribute("aria-valuenow", String(unique));
+  element("#collection-message").textContent =
+    unique === items.length
+      ? "コンプリート！ みんな、あなたのともだち。"
+      : unique > 0
+        ? `あと${items.length - unique}種類の、新しい出会い。`
+        : "あなたの小さなコレクション、ここから。";
+  const visibleItems = items.filter(
+    (item) => filter === "all" || (collection[item.id] ?? 0) > 0,
+  );
+  element("#item-grid").innerHTML = visibleItems
+    .map((item) => {
+      const count = collection[item.id] ?? 0;
+      return `<article class="item-card ${count ? "owned" : "unowned"} ${item.rarity}" style="--item-color:${item.color}"><div class="card-top"><span class="rarity">${item.rarity === "rare" ? "✦ RARE" : "NORMAL"}</span><span class="count">${count ? `× ${count}` : "未獲得"}</span></div><div class="card-art">${art(item)}${count ? "" : '<span class="locked-label">? <span>まだ出会っていません</span></span>'}</div><div class="card-info"><small>${item.englishName}</small><h3>${item.name}</h3></div></article>`;
+    })
+    .join("");
+  element("#empty-message").hidden = visibleItems.length > 0;
+  if (storageFailed) {
+    element("#storage-note").textContent =
+      "保存データを読み書きできませんでした。現在の画面では遊べますが、再読み込みすると記録を失う場合があります。";
+    element("#storage-note").classList.add("warning");
+  }
+}
+
+function saveCollection() {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(collection));
+  } catch {
+    storageFailed = true;
+  }
+}
+
+async function draw() {
+  if (drawing) return;
+  drawing = true;
+  drawButton.disabled = true;
+  resultDialog.close();
+  const item = drawItem();
+  const isNew = !collection[item.id];
+  // Record before animation: closing/reloading during the animation never loses a draw.
+  collection = addItem(collection, item);
+  saveCollection();
+  element(".play-area").classList.add("drawing");
+  element("#draw-status").textContent = "くるくる… だれに出会えるかな？";
+  drawButton.querySelector("span:nth-child(2)")!.textContent = "お楽しみ…";
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  await new Promise((resolve) =>
+    window.setTimeout(resolve, reducedMotion ? 100 : 1600),
+  );
+  element(".play-area").classList.remove("drawing");
+  renderCollection();
+  resultDialog.classList.toggle("rare-result", item.rarity === "rare");
+  element("#result-content").innerHTML =
+    `<div class="eyebrow">${isNew ? "NEW FRIEND!" : "HELLO AGAIN!"}</div><div class="result-art">${art(item)}<span class="result-spark one">✧</span><span class="result-spark two">✦</span></div><span class="result-rarity">${item.rarity === "rare" ? "✦ RARE · 特別な出会い" : "NORMAL · ちいさなともだち"}</span><h2 id="result-title">${item.name}</h2><p>${item.description}</p><div class="result-count">${isNew ? "はじめての出会い！" : "また会えたね！"} <span>所持数 × ${collection[item.id]}</span></div>`;
+  resultDialog.showModal();
+  element("#draw-status").textContent = `${item.name}をお迎えしました！`;
+  drawButton.querySelector("span:nth-child(2)")!.textContent = "ガチャをひく";
+  drawButton.disabled = false;
+  drawing = false;
+}
+
+drawButton.addEventListener("click", () => void draw());
+element("#again").addEventListener("click", () => void draw());
+element("#rates-button").addEventListener("click", () =>
+  ratesDialog.showModal(),
+);
+element("#view-collection").addEventListener("click", () => {
+  resultDialog.close();
+  element("#collection").scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? "instant"
+      : "smooth",
+  });
+});
+for (const dialog of [resultDialog, ratesDialog]) {
+  dialog
+    .querySelector(".close-button")!
+    .addEventListener("click", () => dialog.close());
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) {
+      const bounds = dialog.getBoundingClientRect();
+      if (
+        event.clientX < bounds.left ||
+        event.clientX > bounds.right ||
+        event.clientY < bounds.top ||
+        event.clientY > bounds.bottom
+      )
+        dialog.close();
+    }
+  });
+}
+for (const button of document.querySelectorAll<HTMLButtonElement>(
+  "[data-filter]",
+)) {
+  button.addEventListener("click", () => {
+    filter = button.dataset.filter as typeof filter;
+    for (const sibling of document.querySelectorAll("[data-filter]")) {
+      const active = sibling === button;
+      sibling.classList.toggle("active", active);
+      sibling.setAttribute("aria-pressed", String(active));
+    }
+    renderCollection();
+  });
+}
+renderCollection();
