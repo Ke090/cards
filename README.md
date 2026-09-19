@@ -22,6 +22,11 @@ npm run preview
 ```
 devは127.0.0.1:5173固定です。previewは通常127.0.0.1:4173で起動し、先にbuildが必要です。
 
+## GitHub Pagesへのデプロイ
+リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** に設定してください。`main`へのpush、またはActions画面からの手動実行で、`.github/workflows/deploy-pages.yml`が`dist`を公開します。
+
+Viteの出力は相対パスに設定しているため、`https://ユーザー名.github.io/リポジトリ名/`のようなプロジェクトPagesと、独自ドメイン・ユーザーPagesのどちらでも同じbuildを利用できます。
+
 ## 仕様と保存
 - 通常14種類（各96÷14%、約6.857%）と、レア「ほしの王さま」（4%）。毎回独立抽選し、レア確定保証はありません。画面は小数第3位に丸めて表示します。
 - 新たにうさぎ・きつね・ペンギン・きのこ・くじら・おばけ・真珠・ポット・ランタン・かぎの10種類を追加。既存5種類の所持データは引き継ぎます。
@@ -60,7 +65,7 @@ TypeScript（strict）＋Vite＋ネイティブDOM/CSS。production dependency�
 環境変数・API・DB・migration・認証はありません。APIキーも不要です。初期リポジトリには短いREADMEしかなく、既存実装・規約・CIはありませんでした。
 
 ## アイテム追加
-`src/catalog.ts`に不変で一意のID、名称、説明、rarity、正のweight、artなどを追加します。確率・表示件数・達成率は配列から計算します。新しいIDがない旧保存も読めます。追加の個別画像は `art: { url: '/assets/new.png', position: 'center', size: 'contain' }` と指定すれば、既存の画像アトラスやCSSを変更せず追加できます。15種類・レア1種類・レア4%の仕様テストは仕様変更に合わせて更新してください。
+`src/catalog.ts`に不変で一意のID、名称、説明、rarity、正のweight、artなどを追加します。確率・表示件数・達成率は配列から計算します。新しいIDがない旧保存も読めます。追加の個別画像は、Pagesのサブパスにも対応するため `individualArt("new")` を指定すれば、既存の画像アトラスやCSSを変更せず追加できます。15種類・レア1種類・レア4%の仕様テストは仕様変更に合わせて更新してください。
 
 ## ローカル確認
 - batで起動し、演出中の連打で余分な抽選が起きないこと。
