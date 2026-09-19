@@ -1,0 +1,428 @@
+.motion-settings {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 8px;
+  font-size: 11px;
+}
+.motion-settings select {
+  padding: 8px;
+  border: 1px solid #ccd6bd;
+  border-radius: 8px;
+  background: #fffdf5;
+  color: #49634c;
+  font: inherit;
+}
+.motion-hint {
+  max-width: 320px;
+  margin: 8px auto;
+  font-size: 11px;
+  color: #7b7058;
+}
+.preview-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  color: #79816d;
+}
+.preview-buttons small {
+  flex-basis: 100%;
+  margin-top: -8px;
+}
+.capsule-stage {
+  height: 330px;
+  overflow: hidden;
+}
+.delivery-chute {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 65px);
+  width: 130px;
+  height: 35px;
+  border-radius: 8px 8px 35px 35px;
+  background: #465e4b;
+  color: #e9e8cf;
+  box-shadow: inset 0 -7px 10px #172d3455;
+  font-size: 8px;
+  letter-spacing: 2px;
+  padding-top: 8px;
+}
+.delivery-chute i {
+  display: block;
+  width: 80px;
+  height: 5px;
+  background: #22372c;
+  border-radius: 50%;
+  margin: 5px auto;
+}
+.mixing-balls {
+  position: absolute;
+  top: 140px;
+  left: 50%;
+}
+.mixing-balls i {
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(#fff6db 50%, #8aa47b 50%);
+  border: 1px solid #77936b;
+  animation: mix-balls 0.8s calc(var(--ball) * -0.16s) linear infinite;
+}
+.draw-dialog:not([data-phase="rolling"]) .mixing-balls {
+  display: none;
+}
+[data-phase="rolling"] .big-capsule,
+[data-phase="omen"] .big-capsule {
+  visibility: hidden;
+  animation: none;
+}
+[data-phase="dropping"] .big-capsule {
+  animation: capsule-delivery var(--dropping-duration) linear both;
+  transform-origin: 50% 100%;
+}
+.big-capsule {
+  top: 90px;
+}
+.capsule-ground {
+  top: 284px;
+}
+.capsule-halo {
+  top: 45px;
+}
+.capsule-particles {
+  top: 185px;
+}
+.capsule-particles span {
+  transform: rotate(calc(var(--particle) * 30deg)) translateY(-135px);
+}
+.impact-ring {
+  position: absolute;
+  top: 271px;
+  left: calc(50% - 95px);
+  width: 190px;
+  height: 30px;
+  border: 3px solid #98aa78;
+  border-radius: 50%;
+  opacity: 0;
+}
+[data-phase="dropping"] .impact-ring {
+  animation: landing-ripple var(--dropping-duration) ease-out both;
+}
+[data-phase="dropping"] .capsule-ground {
+  animation: landing-shadow var(--dropping-duration) linear both;
+}
+.capsule-seam {
+  position: absolute;
+  top: 49%;
+  left: 3%;
+  width: 94%;
+  height: 4px;
+  border-radius: 50%;
+  background: #fffde0;
+  opacity: 0;
+  box-shadow: 0 0 25px 10px #ffeeb5;
+}
+[data-phase="cracking"] .big-capsule {
+  animation: capsule-rattle 0.12s linear infinite;
+}
+[data-phase="cracking"] .capsule-seam {
+  animation: seam-light var(--cracking-duration) ease-in both;
+}
+[data-phase="cracking"] .capsule-seal {
+  opacity: 0;
+}
+.capsule-half {
+  transition: none;
+}
+[data-phase="opening"] .capsule-top,
+[data-phase="revealing"] .capsule-top {
+  animation: lid-away var(--opening-duration) ease-out both;
+}
+[data-phase="opening"] .capsule-bottom,
+[data-phase="revealing"] .capsule-bottom {
+  animation: base-away var(--opening-duration) ease-out both;
+}
+[data-phase="revealing"] .capsule-seal {
+  opacity: 0;
+}
+[data-phase="opening"] .capsule-halo,
+[data-phase="revealing"] .capsule-halo {
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow: 0 0 50px #d4df9a77;
+}
+[data-phase="opening"] .capsule-particles span,
+[data-phase="revealing"] .capsule-particles span {
+  animation: opening-sparkles 2.5s ease-out both;
+}
+.capsule-prize {
+  position: absolute;
+  top: 53px;
+  left: calc(50% - 100px);
+  width: 200px;
+  height: 250px;
+  opacity: 0;
+  pointer-events: none;
+  background: #fff9e8;
+  border-radius: 35px;
+}
+.capsule-prize .item-art {
+  width: 100%;
+  height: 100%;
+}
+[data-phase="revealing"] .capsule-prize {
+  animation: prize-emerges var(--revealing-duration)
+    cubic-bezier(0.15, 0.7, 0.2, 1) both;
+}
+.rare-capsule {
+  background: radial-gradient(
+    ellipse at 50% 48%,
+    #62572c,
+    #263d36 65%,
+    #182c2b
+  );
+  color: #fff2c8;
+  border: 2px solid #d5b45f;
+  box-shadow: 0 0 90px #d7ba6844;
+}
+.rare-capsule #sequence-caption,
+.rare-capsule .sequence-steps,
+.rare-capsule .eyebrow,
+.rare-capsule .text-button {
+  color: #f0d997;
+}
+.rare-capsule .sequence-steps span:nth-of-type(n) {
+  color: #f0d997;
+}
+.rare-capsule .capsule-top {
+  background: linear-gradient(125deg, #fff8c5, #e8c465 60%, #ab7c2d);
+}
+.rare-capsule .capsule-bottom {
+  background: linear-gradient(115deg, #f4d980, #be8b29 65%, #8a5d1d);
+}
+.rare-capsule .capsule-particles span {
+  color: #ffe8a0;
+  text-shadow: 0 0 12px #ffd367;
+}
+.rare-capsule .capsule-halo {
+  border-color: #f7d78388;
+  box-shadow: 0 0 70px #ffda6655;
+}
+.rare-beams {
+  display: none;
+  position: absolute;
+  inset: -35px -10px;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg,
+    #ffdf881c 0deg 12deg,
+    transparent 12deg 30deg
+  );
+  mask-image: radial-gradient(circle, #000, transparent 70%);
+}
+.rare-capsule .rare-beams {
+  display: block;
+  animation: capsule-orbit 18s linear infinite;
+}
+[data-phase="omen"] .capsule-halo {
+  animation: rare-omen var(--omen-duration) ease-out both;
+}
+.rare-capsule[data-phase="revealing"] .capsule-prize {
+  filter: drop-shadow(0 0 22px #ffe087aa);
+}
+.result-radiance {
+  display: none;
+  position: absolute;
+  width: 550px;
+  height: 550px;
+  top: -30px;
+  left: calc(50% - 275px);
+  background: repeating-conic-gradient(
+    #e9c15233 0deg 10deg,
+    transparent 10deg 25deg
+  );
+  mask-image: radial-gradient(circle, #000, transparent 68%);
+  pointer-events: none;
+}
+.rare-result .result-radiance {
+  display: block;
+  animation: capsule-orbit 30s linear infinite;
+}
+.result-dialog:not(.rare-result) .result-confetti i:nth-child(n + 19) {
+  display: none;
+}
+.rare-result .result-confetti i {
+  left: calc(2% + var(--confetti) * 2.7%);
+  background: #dcb54d;
+}
+.rare-result .result-confetti i:nth-child(3n) {
+  border-radius: 50%;
+  background: #fff4bb;
+}
+@keyframes mix-balls {
+  from {
+    transform: rotate(0deg) translateX(65px) rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg) translateX(65px) rotate(-360deg);
+  }
+}
+@keyframes capsule-delivery {
+  0% {
+    transform: translateY(-260px) scale(0.55) rotate(-100deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  55% {
+    transform: translateY(7px) scale(1.15, 0.85) rotate(8deg);
+  }
+  73% {
+    transform: translateY(-57px) scale(0.97, 1.03) rotate(-12deg);
+  }
+  88% {
+    transform: translateY(5px) scale(1.05, 0.95) rotate(4deg);
+  }
+  95% {
+    transform: translateY(-10px) rotate(-2deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes landing-ripple {
+  0%,
+  50% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  58% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+@keyframes landing-shadow {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.2;
+  }
+  55%,
+  88%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  73% {
+    transform: scale(0.65);
+    opacity: 0.5;
+  }
+}
+@keyframes capsule-rattle {
+  0%,
+  100% {
+    transform: rotate(-3deg) translateX(-2px);
+  }
+  50% {
+    transform: rotate(3deg) translateX(2px);
+  }
+}
+@keyframes seam-light {
+  from {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1.1);
+  }
+}
+@keyframes lid-away {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-14px, -55px) rotate(-18deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-80px, -135px) rotate(-55deg);
+  }
+}
+@keyframes base-away {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  30% {
+    opacity: 1;
+    transform: translate(10px, 30px) rotate(12deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(75px, 110px) rotate(40deg);
+  }
+}
+@keyframes opening-sparkles {
+  from {
+    opacity: 1;
+    transform: rotate(calc(var(--particle) * 30deg)) translateY(-30px)
+      scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: rotate(calc(var(--particle) * 30deg)) translateY(-210px)
+      scale(1.5);
+  }
+}
+@keyframes prize-emerges {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.25);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-8px) scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rare-omen {
+  from {
+    transform: scale(0.25);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+html[data-motion="reduced"] .mixing-balls,
+html[data-motion="reduced"] .rare-beams,
+html[data-motion="reduced"] .result-radiance {
+  display: none;
+}
+html[data-motion="reduced"] [data-phase="revealing"] .capsule-prize {
+  opacity: 1;
+  transform: none;
+}
+html[data-motion="reduced"] [data-phase="revealing"] .big-capsule {
+  visibility: hidden;
+}
+@media (max-width: 720px) {
+  .capsule-stage {
+    height: 320px;
+  }
+}
