@@ -9,11 +9,13 @@ export interface Item {
   color: string;
 }
 
+const assetBaseUrl = `${import.meta.env.BASE_URL}assets/`;
+
 // Frame each character independently so adjacent toys do not bleed into its card.
-// New standalone artwork can use { url: '/assets/new.png', position: 'center', size: 'contain' }.
+// New standalone artwork should use individualArt() to remain Pages-path-safe.
 function atlasArt(left: number, width: number): Item["art"] {
   return {
-    url: "/assets/collection.png",
+    url: `${assetBaseUrl}collection.png`,
     position: `${(left / (1536 - width)) * 100}% 44%`,
     size: `${(1536 / width) * 100}% auto`,
   };
@@ -21,7 +23,7 @@ function atlasArt(left: number, width: number): Item["art"] {
 
 function individualArt(id: string, scale = 145): Item["art"] {
   return {
-    url: `/assets/${id}.png`,
+    url: `${assetBaseUrl}${id}.png`,
     position: "center",
     size: `${scale}% auto`,
   };
