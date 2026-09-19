@@ -1,0 +1,56 @@
+{
+  "tool": "Built-in image_gen",
+  "note": "10 individual original PNG assets; no API key or runtime image service required.",
+  "assets": [
+    {
+      "id": "bunny",
+      "file": "public/assets/bunny.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A small ivory bunny with long soft ears holding a tiny peach-colored crescent moon, sleepy gentle face. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "fox",
+      "file": "public/assets/fox.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A chubby apricot orange baby fox with large cream-tipped fluffy tail curled around its feet, gentle smile. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "penguin",
+      "file": "public/assets/penguin.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A round pale blue baby penguin with cream belly and a tiny sage green scarf, happy face. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "mushroom",
+      "file": "public/assets/mushroom.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A tiny friendly mushroom spirit with a dusty red cap with cream spots and a short cream body, smiling face. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "whale",
+      "file": "public/assets/whale.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A little floating pastel blue whale carrying a small fluffy ivory cloud on its back, gentle smile. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "ghost",
+      "file": "public/assets/ghost.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A tiny friendly ivory ghost with rounded wavy base, rosy cheeks, holding one mint leaf, cute not scary. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "shell",
+      "file": "public/assets/shell.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A small pale pink open scallop shell holding one glowing pearl, a delicate collectible treasure. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "teapot",
+      "file": "public/assets/teapot.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A round mint green ceramic teapot with cream lid, little daisy motif, chunky curved handle and spout. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "lantern",
+      "file": "public/assets/lantern.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A tiny brass and amber glass lantern with a warm soft light inside, rounded whimsical proportions. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    },
+    {
+      "id": "key",
+      "file": "public/assets/key.png",
+      "prompt": "Use case: stylized-concept. Asset type: individual collectible icon for the POCKET GACHA web game. Create ONE premium whimsical 3D clay/ceramic collectible toy: A lavender crystal key with a faceted star-shaped bow and small golden teeth, a whimsical collectible treasure. Warm ivory seamless studio background, matte tactile surfaces, rounded kawaii shapes, soft subtle contact shadow, warm diffused light from upper left. Front three-quarter view. Square image. The entire toy must be centered and occupy only 65% of the canvas width and 65% height, generous empty margins on ALL sides. No other subjects, no text, no letters, no logo, no watermark. Clean exquisite product photography, gentle sage/peach/cream palette, consistent with small Japanese capsule toys."
+    }
+  ]
+}
