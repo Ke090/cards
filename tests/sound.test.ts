@@ -61,23 +61,30 @@ describe("sound effects", () => {
     expect(context.createOscillator).not.toHaveBeenCalled();
     expect(factory).toHaveBeenCalledTimes(1);
   });
-  it.each<SoundCue>(["roll", "drop", "ready", "open", "normal", "rare"])(
-    "schedules %s with bounded, finite tone timing",
-    async (cue) => {
-      const { context, factory } = audioMock();
-      const sound = new SoundEffects(factory);
-      await sound.unlock();
-      sound.play(cue);
-      expect(context.createOscillator.mock.results.length).toBeGreaterThan(0);
-      for (const { value: voice } of context.createOscillator.mock.results) {
-        const start = voice.start.mock.calls[0][0];
-        const stop = voice.stop.mock.calls[0][0];
-        expect(start).toBeGreaterThanOrEqual(10);
-        expect(stop).toBeGreaterThan(start);
-        expect(stop).toBeLessThan(12);
-      }
-    },
-  );
+  it.each<SoundCue>([
+    "roll",
+    "omen",
+    "drop",
+    "ready",
+    "charge",
+    "open",
+    "rare-open",
+    "normal",
+    "rare",
+  ])("schedules %s with bounded, finite tone timing", async (cue) => {
+    const { context, factory } = audioMock();
+    const sound = new SoundEffects(factory);
+    await sound.unlock();
+    sound.play(cue);
+    expect(context.createOscillator.mock.results.length).toBeGreaterThan(0);
+    for (const { value: voice } of context.createOscillator.mock.results) {
+      const start = voice.start.mock.calls[0][0];
+      const stop = voice.stop.mock.calls[0][0];
+      expect(start).toBeGreaterThanOrEqual(10);
+      expect(stop).toBeGreaterThan(start);
+      expect(stop).toBeLessThan(12);
+    }
+  });
   it("tolerates unavailable or rejected browser audio without interrupting the game", async () => {
     const unavailable = vi.fn();
     const sound = new SoundEffects(() => {

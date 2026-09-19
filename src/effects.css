@@ -462,13 +462,11 @@
     font-size: 10px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .result-dialog[open] .result-art {
-    opacity: 1;
-    transform: none;
-  }
-  .result-confetti,
-  .capsule-particles {
-    display: none;
-  }
+html[data-motion="reduced"] .result-dialog[open] .result-art {
+  opacity: 1;
+  transform: none;
+}
+html[data-motion="reduced"] .result-confetti,
+html[data-motion="reduced"] .capsule-particles {
+  display: none;
 }

@@ -1,8 +1,14 @@
 import "./style.css";
 import "./effects.css";
+import "./capsule-animation.css";
 import { items, probability, type Item } from "./catalog";
 import { DrawSequence, type DrawPhase } from "./draw-sequence";
 import { SoundEffects, readSoundPreference, soundStorageKey } from "./sound";
+import {
+  motionStorageKey,
+  parseMotionPreference,
+  shouldReduceMotion,
+} from "./motion";
 import {
   addItem,
   drawItem,
@@ -32,17 +38,22 @@ app.innerHTML = `
     <div class="eyebrow">A LITTLE MOMENT OF MAGIC</div>
     <h2 id="sequence-title" tabindex="-1">くるくる、わくわく。</h2>
     <div class="capsule-stage">
+      <div class="delivery-chute" aria-hidden="true"><span>POCKET EXPRESS</span><i></i></div>
+      <div class="mixing-balls" aria-hidden="true">${Array.from({ length: 5 }, (_, i) => `<i style="--ball:${i}"></i>`).join("")}</div>
+      <div class="rare-beams" aria-hidden="true"></div>
       <div class="capsule-halo" aria-hidden="true"></div>
-      <div class="capsule-particles" aria-hidden="true">${Array.from({ length: 8 }, (_, i) => `<span style="--particle:${i}">✦</span>`).join("")}</div>
+      <div id="capsule-prize" class="capsule-prize" aria-hidden="true"></div>
+      <div class="impact-ring" aria-hidden="true"></div>
+      <div class="capsule-particles" aria-hidden="true">${Array.from({ length: 12 }, (_, i) => `<span style="--particle:${i}">✦</span>`).join("")}</div>
       <button id="open-capsule" class="big-capsule" aria-label="カプセルを開ける" disabled>
-        <span class="capsule-half capsule-top"></span><span class="capsule-half capsule-bottom"></span><span class="capsule-seal" aria-hidden="true">✦</span>
+        <span class="capsule-half capsule-top"></span><span class="capsule-half capsule-bottom"></span><span class="capsule-seam" aria-hidden="true"></span><span class="capsule-seal" aria-hidden="true">✦</span>
       </button>
       <div class="capsule-ground" aria-hidden="true"></div>
     </div>
     <p id="sequence-caption" role="status">ちいさな出会いを、準備しています。</p>
     <div class="sequence-steps" aria-hidden="true"><span>01 まわす</span><i></i><span>02 あける</span><i></i><span>03 であう</span></div>
   </dialog>
-  <dialog id="result-dialog" class="result-dialog" aria-labelledby="result-title"><div class="result-sound">${soundButton}</div><button class="close-button" aria-label="結果を閉じる">×</button><div class="result-confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, i) => `<i style="--confetti:${i}"></i>`).join("")}</div><div id="result-content"></div><button id="again" class="draw-button">もう一度ひく <span aria-hidden="true">↗</span></button><button id="view-collection" class="text-button">コレクションを見る</button></dialog>
+  <dialog id="result-dialog" class="result-dialog" aria-labelledby="result-title"><div class="result-radiance" aria-hidden="true"></div><div class="result-sound">${soundButton}</div><button class="close-button" aria-label="結果を閉じる">×</button><div class="result-confetti" aria-hidden="true">${Array.from({ length: 36 }, (_, i) => `<i style="--confetti:${i}"></i>`).join("")}</div><div id="result-content"></div><button id="again" class="draw-button">もう一度ひく <span aria-hidden="true">↗</span></button><button id="view-collection" class="text-button">コレクションを見る</button></dialog>
   <dialog id="rates-dialog" aria-labelledby="rates-title"><button class="close-button" aria-label="提供割合を閉じる">×</button><div class="eyebrow">MEET YOUR LITTLE FRIENDS</div><h2 id="rates-title">ラインナップ・提供割合</h2><p class="dialog-description">ちいさなともだち / VOL. 01 · 全${items.length}種類<br>毎回、同じ確率で抽選します。重複して出ることもあります。</p><div class="rates-list">${items.map((item) => `<div><div class="rate-art">${art(item)}</div><span>${item.name}<small>${item.rarity === "rare" ? "✦ RARE" : "NORMAL"}</small></span><strong>${Number(probability(item).toFixed(3))}<small>%</small></strong></div>`).join("")}</div><p class="dialog-description">割合は小数第3位に丸めて表示しています。<br>回数による確率の変化や、レアの確定保証はありません。</p></dialog>`;
 
 function element<T extends HTMLElement>(selector: string): T {
@@ -67,7 +78,49 @@ const ratesDialog = element<HTMLDialogElement>("#rates-dialog");
 const drawButton = element<HTMLButtonElement>("#draw");
 const drawDialog = element<HTMLDialogElement>("#draw-dialog");
 const openCapsule = element<HTMLButtonElement>("#open-capsule");
-let pendingResult: { item: Item; isNew: boolean } | undefined;
+let pendingResult: { item: Item; isNew: boolean; preview: boolean } | undefined;
+let lastPreview: Item["rarity"] | undefined;
+let revealSoundPlayed = false;
+element("#draw-status").insertAdjacentHTML(
+  "afterend",
+  `
+  <div class="motion-settings"><label for="motion-preference">演出の動き</label><select id="motion-preference"><option value="auto">自動（OSに合わせる）</option><option value="full">しっかり再生</option><option value="reduced">ひかえめ</option></select></div>
+  <p id="motion-hint" class="motion-hint" hidden>現在は動きを省略しています。アニメーションを見るには「しっかり再生」を選んでください。</p>
+  <div class="preview-buttons"><span>演出おためし</span><button id="preview-normal" class="text-button">通常</button><button id="preview-rare" class="text-button">✦ レア</button><small>アイテムは増えません</small></div>`,
+);
+const motionSelect = element<HTMLSelectElement>("#motion-preference");
+const systemMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let motionPreference = parseMotionPreference(null);
+try {
+  motionPreference = parseMotionPreference(
+    localStorage.getItem(motionStorageKey),
+  );
+} catch {
+  /* Use system default. */
+}
+motionSelect.value = motionPreference;
+function applyMotionPreference() {
+  if (drawing) return;
+  document.documentElement.dataset.motion = shouldReduceMotion(
+    motionPreference,
+    systemMotion.matches,
+  )
+    ? "reduced"
+    : "full";
+  element("#motion-hint").hidden =
+    document.documentElement.dataset.motion !== "reduced";
+}
+motionSelect.addEventListener("change", () => {
+  motionPreference = parseMotionPreference(motionSelect.value);
+  try {
+    localStorage.setItem(motionStorageKey, motionPreference);
+  } catch {
+    /* Keep session preference. */
+  }
+  applyMotionPreference();
+});
+systemMotion.addEventListener("change", applyMotionPreference);
+applyMotionPreference();
 const sound = new SoundEffects(undefined, updateSoundButtons);
 try {
   sound.setEnabled(readSoundPreference(localStorage.getItem(soundStorageKey)));
@@ -152,17 +205,26 @@ function saveCollection() {
   }
 }
 
-function draw() {
+function draw(previewRarity?: Item["rarity"]) {
   if (drawing) return;
   drawing = true;
   drawButton.disabled = true;
+  motionSelect.disabled = true;
   resultDialog.close();
-  const item = drawItem();
+  const item = previewRarity
+    ? items.find((item) => item.rarity === previewRarity)!
+    : drawItem();
   const isNew = !collection[item.id];
-  pendingResult = { item, isNew };
+  pendingResult = { item, isNew, preview: previewRarity !== undefined };
+  revealSoundPlayed = false;
+  lastPreview = previewRarity;
   // Record before animation: closing/reloading during the animation never loses a draw.
-  collection = addItem(collection, item);
-  saveCollection();
+  if (!previewRarity) {
+    collection = addItem(collection, item);
+    saveCollection();
+  }
+  element("#capsule-prize").innerHTML = art(item);
+  element("#capsule-prize").setAttribute("aria-hidden", "true");
   element(".play-area").classList.add("drawing");
   element("#draw-status").textContent = "くるくる… だれに出会えるかな？";
   drawButton.querySelector("span:nth-child(2)")!.textContent = "お楽しみ…";
@@ -171,10 +233,16 @@ function draw() {
   void sound.unlock().then(() => {
     if (sequence.phase === "rolling" && !document.hidden) sound.play("roll");
   });
-  sequence.start(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  sequence.start(
+    shouldReduceMotion(motionPreference, systemMotion.matches),
+    item.rarity === "rare",
+  );
 }
 
 function onDrawPhase(phase: DrawPhase) {
+  for (const [key, duration] of Object.entries(sequence.timings)) {
+    drawDialog.style.setProperty(`--${key}-duration`, `${duration}ms`);
+  }
   drawDialog.dataset.phase = phase;
   drawDialog.classList.toggle(
     "rare-capsule",
@@ -185,8 +253,14 @@ function onDrawPhase(phase: DrawPhase) {
     element("#sequence-title").textContent = "くるくる、わくわく。";
     element("#sequence-caption").textContent =
       "ちいさな出会いを、準備しています。";
+  } else if (phase === "omen") {
+    element("#sequence-title").textContent = "あれ…？ 空気が変わった。";
+    element("#sequence-caption").textContent = "特別な出会いが、近づいている。";
+    if (!document.hidden) sound.play("omen");
   } else if (phase === "dropping") {
-    element("#sequence-title").textContent = "ころん。届いたよ。";
+    element("#sequence-title").textContent = "ころころ、ぽんっ！";
+    element("#sequence-caption").textContent =
+      "あなたのもとへ、カプセルが到着。";
     if (!document.hidden) sound.play("drop");
   } else if (phase === "ready") {
     element("#sequence-title").textContent =
@@ -198,10 +272,24 @@ function onDrawPhase(phase: DrawPhase) {
     if (document.activeElement === element("#sequence-title"))
       openCapsule.focus();
     if (!document.hidden) sound.play("ready");
+  } else if (phase === "cracking") {
+    element("#sequence-title").textContent = "なかから、光が…！";
+    element("#sequence-caption").textContent = "もうすぐ、会える。";
+    if (!document.hidden) sound.play("charge");
   } else if (phase === "opening") {
     element("#sequence-title").textContent = "小さな出会いが、ひらく。";
     element("#sequence-caption").textContent = "ぱかっ！";
-    if (!document.hidden) sound.play("open");
+    if (!document.hidden)
+      sound.play(pendingResult?.item.rarity === "rare" ? "rare-open" : "open");
+  } else if (phase === "revealing") {
+    element("#sequence-title").textContent = pendingResult!.item.name;
+    element("#sequence-caption").textContent =
+      pendingResult!.item.rarity === "rare"
+        ? "✦ RARE FRIEND · とっておきの出会い！"
+        : "こんにちは、新しいともだち。";
+    element("#capsule-prize").setAttribute("aria-hidden", "false");
+    if (!document.hidden) sound.play(pendingResult!.item.rarity);
+    revealSoundPlayed = true;
   } else if (phase === "result") {
     showResult();
   }
@@ -209,25 +297,33 @@ function onDrawPhase(phase: DrawPhase) {
 
 function showResult() {
   if (!pendingResult) return;
-  const { item, isNew } = pendingResult;
+  const { item, isNew, preview } = pendingResult;
   pendingResult = undefined;
-  sound.stop();
+  if (!revealSoundPlayed) sound.stop();
   drawDialog.close();
   element(".play-area").classList.remove("drawing");
   renderCollection();
   resultDialog.classList.toggle("rare-result", item.rarity === "rare");
   element("#result-content").innerHTML =
-    `<div class="eyebrow">${isNew ? "NEW FRIEND!" : "HELLO AGAIN!"}</div><div class="result-art">${art(item)}<span class="result-spark one">✧</span><span class="result-spark two">✦</span></div><span class="result-rarity">${item.rarity === "rare" ? "✦ RARE · 特別な出会い" : "NORMAL · ちいさなともだち"}</span><h2 id="result-title">${item.name}</h2><p>${item.description}</p><div class="result-count">${isNew ? "はじめての出会い！" : "また会えたね！"} <span>所持数 × ${collection[item.id]}</span></div>`;
+    `<div class="eyebrow">${preview ? "ANIMATION PREVIEW" : isNew ? "NEW FRIEND!" : "HELLO AGAIN!"}</div><div class="result-art">${art(item)}<span class="result-spark one">✧</span><span class="result-spark two">✦</span></div><span class="result-rarity">${item.rarity === "rare" ? "✦ RARE · 特別な出会い" : "NORMAL · ちいさなともだち"}</span><h2 id="result-title">${item.name}</h2><p>${item.description}</p><div class="result-count">${preview ? "演出のおためしです。アイテムは増えません。" : `${isNew ? "はじめての出会い！" : "また会えたね！"} <span>所持数 × ${collection[item.id]}</span>`}</div>`;
+  element("#again").innerHTML =
+    `${preview ? "もう一度見る" : "もう一度ひく"} <span aria-hidden="true">↗</span>`;
   resultDialog.showModal();
-  if (!document.hidden) sound.play(item.rarity);
-  element("#draw-status").textContent = `${item.name}をお迎えしました！`;
+  if (!document.hidden && !revealSoundPlayed) sound.play(item.rarity);
+  element("#draw-status").textContent = preview
+    ? "演出のおためしが終わりました。"
+    : `${item.name}をお迎えしました！`;
   drawButton.querySelector("span:nth-child(2)")!.textContent = "ガチャをひく";
   drawButton.disabled = false;
   drawing = false;
+  motionSelect.disabled = false;
+  applyMotionPreference();
 }
 
-drawButton.addEventListener("click", draw);
-element("#again").addEventListener("click", draw);
+drawButton.addEventListener("click", () => draw());
+element("#again").addEventListener("click", () => draw(lastPreview));
+element("#preview-normal").addEventListener("click", () => draw("normal"));
+element("#preview-rare").addEventListener("click", () => draw("rare"));
 openCapsule.addEventListener("click", () => sequence.open());
 element("#skip-animation").addEventListener("click", () => sequence.skip());
 drawDialog.addEventListener("cancel", (event) => {

@@ -26,6 +26,7 @@ Since the repository had no implementation, these are conventions established fo
 - Use camelCase for functions/variables, PascalCase for types and kebab-case for CSS classes/files.
 - Treat storage failures as recoverable: continue the game in memory and show a user-facing notice.
 - Presentation state belongs in `draw-sequence.ts`, separate from the one-time draw/save. Skipping or opening repeatedly must not grant extra items; cancel pending presentation timers when skipping.
+- Animation previews must not mutate collection data or draw counts. Resolve motion preferences through `motion.ts`: automatic follows the OS, while explicit full/reduced selections override it. Keep CSS and sequence timings consistent with the resolved preference.
 - Audio uses `sound.ts` and Web Audio, initialized only after a user gesture. Respect the persisted mute choice, stop scheduled sounds on mute/page hide, and never let audio failure block the game. Honor reduced-motion settings in presentation timing and CSS.
 - Do not add an API or authentication without a corresponding feature requirement.
 

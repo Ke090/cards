@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DrawSequence, type DrawPhase } from "../src/draw-sequence";
+import {
+  DrawSequence,
+  drawTimings,
+  type DrawPhase,
+} from "../src/draw-sequence";
 
 describe("draw presentation", () => {
   beforeEach(() => vi.useFakeTimers());
@@ -12,7 +16,7 @@ describe("draw presentation", () => {
     expect(sequence.start()).toBe(false);
     sequence.open();
     expect(sequence.phase).toBe("rolling");
-    vi.advanceTimersByTime(1500);
+    vi.advanceTimersByTime(drawTimings.normal.rolling);
     expect(sequence.phase).toBe("dropping");
     vi.runAllTimers();
     expect(sequence.phase).toBe("ready");
@@ -26,19 +30,31 @@ describe("draw presentation", () => {
       "rolling",
       "dropping",
       "ready",
+      "cracking",
       "opening",
+      "revealing",
       "result",
     ]);
   });
 
-  it.each([0, 1600, 2000, 2200])(
-    "skips safely at %sms without a late timer reopening the capsule",
-    (elapsed) => {
+  it.each([
+    "rolling",
+    "omen",
+    "dropping",
+    "ready",
+    "cracking",
+    "opening",
+    "revealing",
+  ] as const)(
+    "skips safely during %s without a late timer reopening the capsule",
+    (target) => {
       const onPhase = vi.fn();
       const sequence = new DrawSequence(onPhase);
-      sequence.start();
-      vi.advanceTimersByTime(elapsed);
-      if (elapsed === 2200) sequence.open();
+      sequence.start(false, true);
+      while (sequence.phase !== target) {
+        if (sequence.phase === "ready") sequence.open();
+        else vi.advanceTimersToNextTimer();
+      }
       sequence.skip();
       sequence.skip();
       vi.runAllTimers();
@@ -54,13 +70,47 @@ describe("draw presentation", () => {
     },
   );
 
-  it("shortens reduced-motion playback but still lets the user open the capsule", () => {
-    const sequence = new DrawSequence(() => {});
-    sequence.start(true);
-    vi.runAllTimers();
-    expect(sequence.phase).toBe("ready");
+  it("gives rare draws an omen and longer opening before the prize appears", () => {
+    const phases: DrawPhase[] = [];
+    const sequence = new DrawSequence((phase) => phases.push(phase));
+    sequence.start(false, true);
+    vi.advanceTimersByTime(drawTimings.rare.rolling);
+    expect(sequence.phase).toBe("omen");
+    vi.advanceTimersByTime(drawTimings.rare.omen);
+    expect(sequence.phase).toBe("dropping");
+    vi.advanceTimersByTime(drawTimings.rare.dropping);
     sequence.open();
-    vi.runAllTimers();
+    vi.advanceTimersByTime(drawTimings.rare.cracking);
+    expect(sequence.phase).toBe("opening");
+    vi.advanceTimersByTime(drawTimings.rare.opening);
+    expect(sequence.phase).toBe("revealing");
+    vi.advanceTimersByTime(drawTimings.rare.revealing);
     expect(sequence.phase).toBe("result");
+    expect(phases).toEqual([
+      "rolling",
+      "omen",
+      "dropping",
+      "ready",
+      "cracking",
+      "opening",
+      "revealing",
+      "result",
+    ]);
+    expect(drawTimings.rare.opening).toBeGreaterThan(
+      drawTimings.normal.opening,
+    );
   });
+
+  it.each([false, true])(
+    "shortens reduced-motion playback (rare=%s) but still lets the user open the capsule",
+    (rare) => {
+      const sequence = new DrawSequence(() => {});
+      sequence.start(true, rare);
+      vi.runAllTimers();
+      expect(sequence.phase).toBe("ready");
+      sequence.open();
+      vi.runAllTimers();
+      expect(sequence.phase).toBe("result");
+    },
+  );
 });

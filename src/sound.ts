@@ -1,4 +1,13 @@
-export type SoundCue = "roll" | "drop" | "ready" | "open" | "normal" | "rare";
+export type SoundCue =
+  | "roll"
+  | "omen"
+  | "drop"
+  | "ready"
+  | "charge"
+  | "open"
+  | "rare-open"
+  | "normal"
+  | "rare";
 export const soundStorageKey = "pocket-gacha.sound.v1";
 
 export function readSoundPreference(value: string | null): boolean {
@@ -52,6 +61,18 @@ export class SoundEffects {
       if (cue === "roll") {
         for (let i = 0; i < 10; i++)
           this.note(160 + (i % 3) * 55, i * 0.135, 0.07, "triangle", 0.055);
+      } else if (cue === "omen") {
+        this.note(196, 0, 0.8, "sine", 0.065);
+        this.note(293.66, 0.15, 0.8, "sine", 0.045);
+        this.note(587.33, 0.35, 0.6, "sine", 0.04, 1174.66);
+      } else if (cue === "charge") {
+        this.note(220, 0, 0.4, "sine", 0.065, 660);
+        this.note(440, 0.1, 0.3, "triangle", 0.025, 1320);
+      } else if (cue === "rare-open") {
+        [392, 523.25, 659.25, 784, 1046.5].forEach((frequency, i) =>
+          this.note(frequency, i * 0.12, 0.6, "sine", 0.055),
+        );
+        this.note(130.81, 0, 0.85, "triangle", 0.055);
       } else if (cue === "drop") {
         this.note(160, 0, 0.16, "sine", 0.16, 65);
         this.note(390, 0.12, 0.12, "triangle", 0.07);
