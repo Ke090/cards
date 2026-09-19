@@ -61,7 +61,12 @@ function element<T extends HTMLElement>(selector: string): T {
 }
 
 function art(item: Item): string {
-  return `<div class="item-art" role="img" aria-label="${item.name}" style="--art-image:url('${item.art.url}');--art-position:${item.art.position};--art-size:${item.art.size}"></div>`;
+  // Resolve public artwork against the page before placing it in a CSS custom
+  // property. Relative url() values substituted from a custom property can be
+  // resolved against the generated stylesheet on Pages, producing
+  // /assets/assets/... instead of /assets/....
+  const artworkUrl = new URL(item.art.url, document.baseURI).href;
+  return `<div class="item-art" role="img" aria-label="${item.name}" style="--art-image:url('${artworkUrl}');--art-position:${item.art.position};--art-size:${item.art.size}"></div>`;
 }
 
 let collection: Collection = {};
